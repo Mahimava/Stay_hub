@@ -1,0 +1,84 @@
+<% layout('/layouts/boilerplate') %>
+  <div class="row mt-3">
+    <div class="col-8 offset-2">
+    <h3>Listing Details:</h3>
+  <div class="card" style="width: 18rem;">
+  <img src="<%= (typeof listing.image === 'string' && listing.image) || (listing.image && listing.image.url) || 'https://images.pexels.com/photos/2325447/pexels-photo-2325447.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2' %>" class="card-img-top show-img" alt="listing_image">
+  <div class="card-body">
+    <p class="card-text"><%=listing.title%></p>
+    <% if (listing.owner) { %>
+      <div class="text-muted small">Owner: <%= listing.owner.username %></div>
+    <% } %>
+  </div>
+</div>
+    <ul>
+      <li><%=listing.title%></li>
+      <li><%=listing.description%></li>
+      <li>&#x20B9 <%= (typeof listing.price === 'number') ? listing.price.toLocaleString("en-IN") : 'N/A' %></li>
+      <li><%=listing.location%></li>
+      <li><%=listing.country%></li>
+    </ul>
+    <br>
+    <div class="btns">
+    <% if (currentUser && listing.owner && String(listing.owner._id || listing.owner) === String(currentUser._id)) { %>
+      <a href="/listings/<%=listing._id%>/edit" class="btn btn-dark">Edit</a>&nbsp;&nbsp;
+      <form class="d-inline" method="POST" action="/listings/<%= listing._id%>?_method=DELETE">
+        <button class="btn btn-dark" type="submit">Delete</button>
+      </form>
+    <% } %>
+  </div>
+
+  <hr class="my-4" />
+
+  <section class="reviews-section">
+    <h4 class="mb-3">Reviews</h4>
+    <div class="list-group mb-4">
+      <% if (listing.reviews && listing.reviews.length) { %>
+        <% listing.reviews.forEach(function(rv){ %>
+          <div class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <strong>Rating:</strong> <%= rv.rating %> / 5
+                <div class="text-muted small">
+                  <%= new Date(rv.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
+                  <% if (rv.author) { %> · by <%= rv.author.username %> <% } %>
+                </div>
+                <p class="mb-1"><%= rv.body %></p>
+              </div>
+              <% if (currentUser && rv.author && String(rv.author._id || rv.author) === String(currentUser._id)) { %>
+                <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= rv._id %>?_method=DELETE">
+                  <button class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="text-muted">No reviews yet.</div>
+      <% } %>
+    </div>
+
+    <% if (currentUser) { %>
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Add a review</h5>
+          <form method="POST" action="/listings/<%= listing._id %>/reviews" novalidate>
+            <div class="mb-3">
+              <label class="form-label" for="rating">Rating (1-5)</label>
+              <input class="form-control" type="number" min="1" max="5" name="review[rating]" id="rating" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="body">Review</label>
+              <textarea class="form-control" name="review[body]" id="body" rows="3" required></textarea>
+            </div>
+            <button class="btn btn-dark" type="submit">Submit Review</button>
+          </form>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="alert alert-info">Please <a href="/login">login</a> to add a review.</div>
+    <% } %>
+  </section>
+
+    </div>
+  </div>
